@@ -50,8 +50,8 @@ eval_data = [
     {"path": str(example.filepath), "transcription": clean_transcription(example.txt)} for example in eval_corpus.data
 ] if eval_corpus else None
 
-training_args = TrainingArguments(use_cuda_amp=True)
-training_args.per_device_train_batch_size = 12  # Value of 24 was recommended by the creator of the huggingsound library.
+training_args = TrainingArguments({"use_cuda_amp": True})
+training_args.per_device_train_batch_size = 1  # Value of 24 was recommended by the creator of the huggingsound library.
 training_args.num_train_epochs = num_train_epochs  
 training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to keep the less trained model, it's good to just overwrite the current model directory
 #training_args.save_strategy = 'epoch'  # Default save strategy is 'steps'. If we use 'epoch' instead, a model checkpoint will be saved in the end of every epoch.

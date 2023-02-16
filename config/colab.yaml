@@ -1,0 +1,19 @@
+data:
+  dir: '/content/drive/MyDrive/RussianNationalCorpus'
+  examples: '/content/drive/MyDrive/RussianNationalCorpus/all_data.csv'
+  helper: '/content/drive/MyDrive/RussianNationalCorpus/all_data20.csv'
+  eval: '/content/drive/MyDrive/RussianNationalCorpus/eval_data.csv'
+  examples_per_query: '/content/drive/MyDrive/RussianNationalCorpus/examples'
+  media: '/content/drive/MyDrive/RussianNationalCorpus/media'
+  use_mp3: no  # Files are downloaded as .mp4. However, this sometimes causes errors and a conversion to .mp3 is needed.
+
+query:
+  pages_per_query: 5  # By default, each page contains 5 examples
+
+training:
+  # We can take either a fine-tuned or only pretrained model from the web.
+  # Note that for a fine-tuned model a token set is already defined.
+  web_model: 'facebook/wav2vec2-large-xlsr-53'  # a large model trained on 53 languages from the common_voice dataset
+  pretrained_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/best_model'
+  output_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/best_model'
+  use_model_from_web: no
