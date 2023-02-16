@@ -1,15 +1,17 @@
 data:
   dir: 'data'
-  examples: 'data/new_data.csv'
-  helper: 'data/helper.csv'
-  eval: 'data/eval_data.csv'
-  examples_per_query: 'data/examples'
-  media: 'data/media'
+  examples: 'new_data.csv'
+  helper: 'helper.csv'
+  eval: 'eval_data.csv'
+  examples_per_query: 'examples'
+  media: 'media'
   use_mp3: no  # Files are downloaded as .mp4. However, this sometimes causes errors and a conversion to .mp3 is needed.
-#  model: 'model'
 
 query:
   pages_per_query: 5  # By default, each page contains 5 examples
+  seconds_threshold: 15
+  keep_only_one_person: yes
+  one_sample_per_video: no
 
 training:
   # We can take either a fine-tuned or only pretrained model from the web.
@@ -18,3 +20,7 @@ training:
   pretrained_model_folder: 'model'
   output_model_folder: 'model'
   use_model_from_web: no
+  batch_size: 1
+  fp16: yes
+  logging_steps: 100
+  eval_steps: 100

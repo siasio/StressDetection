@@ -29,9 +29,9 @@ config = read_config(CONFIG_DIR / args.config)
 
 RNC_PATH = Path(config['data']['dir'])
 RNC_PATH.mkdir(exist_ok=True)
-CSV_FILE = Path(config['data']['examples']) if not args.eval else Path(config['data']['eval'])
-HELPER_CSV = Path(config['data']['helper'])
-MEDIA_PATH = Path(config['data']['media'])
+CSV_FILE = RNC_PATH / config['data']['examples'] if not args.eval else RNC_PATH / config['data']['eval']
+HELPER_CSV = RNC_PATH / config['data']['helper']
+MEDIA_PATH = RNC_PATH / config['data']['media']
 MEDIA_PATH.mkdir(exist_ok=True)
 WORDS = args.words
 pages_per_query = config['query']['pages_per_query']
@@ -55,8 +55,9 @@ def download_samples(word, n_pages, examples_path):
     mult.dump()  # This function saves the fetched examples in the examples_path file
 
 
-def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, copy_json=False,
-                           keep_only_one_person=True, one_sample_per_video=False):
+def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, copy_json=False):
+    one_sample_per_video = config['query']['one_sample_per_video']
+
     def number_of_persons(text):
         num = text.count('[')
         return num
@@ -67,15 +68,15 @@ def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, 
         else:
             return name not in base_df['filename'].values
 
-    def short_video(filename, threshold=20):
-        data = cv2.VideoCapture('./'+filename)
+    def short_video(filename):
+        data = cv2.VideoCapture(str(RNC_PATH / filename))
         frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
         fps = int(data.get(cv2.CAP_PROP_FPS))
         if fps == 0:
             print(f'FPS = 0 in {filename}')
             return False
         seconds = frames / fps
-        return seconds < threshold
+        return seconds < config['query']['seconds_threshold']
 
     def keep_row(row, base_df):
         name = row['basename'] if one_sample_per_video else row['filename']
@@ -93,7 +94,7 @@ def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, 
         if 'basename' not in df.columns:
             df['basename'] = df.filename.apply(lambda x: get_basename(x))
 
-    if keep_only_one_person:
+    if config['query']['keep_only_one_person']:
         indices_to_keep = df_to_remove.apply(lambda x: True if keep_row(x, df_to_keep) else False, axis=1)
         if one_sample_per_video:
             rows_non_duplicates = df.to_remove[indices_to_keep].drop_duplicates(subset='basename', inplace=False).index
@@ -103,16 +104,16 @@ def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, 
             for vtr in videos_to_remove:
                 os.remove(vtr)
         df_to_remove = df_to_remove[indices_to_keep]
-    df_len = len(df_to_remove.index)
-    if clean and df_len > 0:
+
+    if clean and len(df_to_remove.index) > 0:
         df_to_remove.loc[:, 'text'] = df_to_remove.text.apply(lambda x: remove_braces_content(x))
     df_to_keep = pd.concat([df_to_keep, df_to_remove], axis=0)
     df_to_keep.to_csv(csv_to_keep, sep='\t', index=False)
 
-    json_to_remove = str(csv_to_remove)[:-3] + 'json'
+    json_to_remove = csv_to_remove.with_suffix('.json')
     if copy_json:
-        json_to_keep = str(csv_to_keep)[:-3] + 'json'
-        shutil.copyfile(json_to_remove, json_to_keep)    
+        json_to_keep = csv_to_keep.with_suffix('.json')
+        shutil.copyfile(json_to_remove, json_to_keep)
     if remove:
         os.remove(csv_to_remove)
         os.remove(json_to_remove)

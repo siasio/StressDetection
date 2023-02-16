@@ -1,19 +1,26 @@
 data:
   dir: '/content/drive/MyDrive/RussianNationalCorpus'
-  examples: '/content/drive/MyDrive/RussianNationalCorpus/all_data.csv'
-  helper: '/content/drive/MyDrive/RussianNationalCorpus/helper.csv'
-  eval: '/content/drive/MyDrive/RussianNationalCorpus/all_data20.csv'
-  examples_per_query: '/content/drive/MyDrive/RussianNationalCorpus/examples'
-  media: '/content/drive/MyDrive/RussianNationalCorpus/media'
+  examples: 'all_data.csv'
+  helper: 'helper.csv'
+  eval: 'all_data20.csv'
+  examples_per_query: 'examples'
+  media: 'media'
   use_mp3: no  # Files are downloaded as .mp4. However, this sometimes causes errors and a conversion to .mp3 is needed.
 
 query:
   pages_per_query: 5  # By default, each page contains 5 examples
+  seconds_threshold: 15
+  keep_only_one_person: yes
+  one_sample_per_video: no
 
 training:
   # We can take either a fine-tuned or only pretrained model from the web.
   # Note that for a fine-tuned model a token set is already defined.
   web_model: 'facebook/wav2vec2-large-xlsr-53'  # a large model trained on 53 languages from the common_voice dataset
-  pretrained_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/best_model'
-  output_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/best_model'
+  pretrained_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/model-23-02-16'
+  output_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/model-23-02-16'
   use_model_from_web: no
+  batch_size: 12
+  fp16: yes
+  logging_steps: 100
+  eval_steps: 100

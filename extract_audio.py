@@ -13,8 +13,8 @@ args = parser.parse_args()
 config = read_config(CONFIG_DIR / args.config)
 
 RNC_PATH = Path(config['data']['dir'])
-CSV_FILE = Path(config['data']['examples'])
-MEDIA_PATH = Path(config['data']['media'])
+CSV_FILE = RNC_PATH / config['data']['examples']
+MEDIA_PATH = RNC_PATH / config['data']['media']
 
 def MP4ToMP3(mp4, mp3):
     FILETOCONVERT = AudioFileClip(mp4)

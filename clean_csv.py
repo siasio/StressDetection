@@ -11,8 +11,9 @@ parser.add_argument('--config', type=str, default='default.yaml',
 args = parser.parse_args()
 config = read_config(CONFIG_DIR / args.config)
 
-CSV_FILE = Path(config['data']['examples'])
-EVAL_CSV = Path(config['data']['eval'])
+RNC_PATH = config['data']['dir']
+CSV_FILE = RNC_PATH / config['data']['examples']
+EVAL_CSV = RNC_PATH / config['data']['eval']
 
 
 def delete_nonexistent(dataframe):

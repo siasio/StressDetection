@@ -16,18 +16,15 @@ nest_asyncio.apply()
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--config', default='default.yaml')
-parser.add_argument('--not_overwrite_output_dir', action='store_true',
-        help='If this flag is provided, the --output_dir must point to an empty or non-existing directory (note that by default it points to the model folder).')
 parser.add_argument('--num_train_epochs', type=int, default=1,
         help='Training will start from the next epoch compared to the one on which it finished previously. Therefore, we need to increase this number each time.')
 args = parser.parse_args()
 
 config = read_config(CONFIG_DIR / args.config)
 
-data_path = config['data']['dir']
-RNC_PATH = Path(data_path)
-train_path = Path(config['data']['examples'])  # Slash is a syntax of the pathlib library
-eval_path = Path(config['data']['eval'])
+RNC_PATH = Path(config['data']['dir'])
+train_path = RNC_PATH / config['data']['examples']  # Slash is a syntax of the pathlib library
+eval_path = RNC_PATH / config['data']['eval']
 model_folder = Path(config['training']['pretrained_model_folder'])
 model_name = config['training']['web_model'] if config['training']['use_model_from_web'] or not model_folder.is_dir()\
     else model_folder
@@ -46,8 +43,8 @@ eval_data = [
     {"path": str(example.filepath), "transcription": clean_transcription(example.txt)} for example in eval_corpus.data
 ] if eval_corpus else None
 
-training_args = TrainingArguments(fp16=True)
-training_args.per_device_train_batch_size = 1  # Value of 24 was recommended by the creator of the huggingsound library.
+training_args = TrainingArguments(fp16=config['training']['fp16'], eval_steps=config['training']['eval_steps'], logging_steps=config['training']['logging_steps'])
+training_args.per_device_train_batch_size = config['training']['batch_size']  # Value of 24 was recommended by the creator of the huggingsound library.
 training_args.num_train_epochs = num_train_epochs  
 training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to keep the less trained model, it's good to just overwrite the current model directory
 #training_args.save_strategy = 'epoch'  # Default save strategy is 'steps'. If we use 'epoch' instead, a model checkpoint will be saved in the end of every epoch.
@@ -60,7 +57,7 @@ token_set = TokenSet(tokens)
 
 model.finetune(
     output_dir, 
-    train_data=train_data,
+    train_data=train_data[:len(train_data)//10],
     eval_data=None, #eval_data, # the eval_data is optional
     token_set=token_set,  # token_set won't be used if the model is already fine-tuned and therefore has the token set already defined
     training_args=training_args
