@@ -10,6 +10,7 @@ import cv2
 import nest_asyncio
 import yaml
 from tqdm import tqdm
+import time
 
 from utils import read_config, CONFIG_DIR
 
@@ -38,24 +39,36 @@ pages_per_query = config['query']['pages_per_query']
 
 
 def download_samples(word, n_pages, examples_path):
-    mult = rnc.MultimodalCorpus(
-        query=word,
-        p_count=n_pages,  # Number of pages (by default there are 5 samples per page)
-        accent=1,  # Thanks to this argument we get stress annotations
-        lang='ru',
-        text='lexform',
-        file=examples_path
-    )
-    # It would be good to somehow tackle a situation when the given word is not found in the corpus.
-    # Currently in such cases, the program just throws an error.
-    mult.DATA_FOLDER = RNC_PATH
-    mult.MEDIA_FOLDER = MEDIA_PATH
-    mult.request_examples()  # This function fetches the examples from the corpus
-    mult.download_all()  # This function downloads the media (.mp4) files to the MEDIA_FOLDER
-    mult.dump()  # This function saves the fetched examples in the examples_path file
+    # if try_num > 0:
+    #     time.sleep(10)
+    try:
+        mult = rnc.MultimodalCorpus(
+            query=word,
+            p_count=1,
+            npp=n_pages * 5,  # Number of pages (by default there are 5 samples per page)
+            accent=1,  # Thanks to this argument we get stress annotations
+            lang='ru',
+            text='lexform',
+            file=examples_path
+        )
+        # It would be good to somehow tackle a situation when the given word is not found in the corpus.
+        # Currently in such cases, the program just throws an error.
+        mult.DATA_FOLDER = RNC_PATH
+        mult.MEDIA_FOLDER = MEDIA_PATH
+        mult.request_examples()  # This function fetches the examples from the corpus
+        mult.download_all()  # This function downloads the media (.mp4) files to the MEDIA_FOLDER
+        mult.dump()  # This function saves the fetched examples in the examples_path file
+    except:
+        ...
+    # except:
+    #     print(f"Downloading {word} interrupted for time {try_num + 1}. Trying again in 10 seconds.")
+    #     download_samples(word, n_pages, examples_path, try_num=try_num + 1)
 
 
 def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, copy_json=False):
+    if not csv_to_remove.is_file():
+        return
+
     one_sample_per_video = config['query']['one_sample_per_video']
 
     def number_of_persons(text):
@@ -69,7 +82,7 @@ def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, 
             return name not in base_df['filename'].values
 
     def short_video(filename):
-        data = cv2.VideoCapture(str(RNC_PATH / filename))
+        data = cv2.VideoCapture(str(filename))
         frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
         fps = int(data.get(cv2.CAP_PROP_FPS))
         if fps == 0:

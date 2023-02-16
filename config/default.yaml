@@ -1,6 +1,6 @@
 data:
-  dir: 'data'
-  examples: 'new_data.csv'
+  dir: 'new_data'
+  examples: 'train_data.csv'
   helper: 'helper.csv'
   eval: 'eval_data.csv'
   examples_per_query: 'examples'
