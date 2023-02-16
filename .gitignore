@@ -1,0 +1,10 @@
+# created by virtualenv automatically
+Lib
+model
+data
+Scripts
+__pycache__
+.idea
+.git
+*.cfg
+*.dll
