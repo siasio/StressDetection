@@ -7,10 +7,6 @@ from transcription_utils import remove_braces_content, get_vowel, get_latin, cle
 import nest_asyncio
 from tqdm import tqdm
 
-from torch.cuda.amp import GradScaler, autocast
-
-scaler = GradScaler()
-
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
 from utils import read_config, CONFIG_DIR
@@ -50,7 +46,7 @@ eval_data = [
     {"path": str(example.filepath), "transcription": clean_transcription(example.txt)} for example in eval_corpus.data
 ] if eval_corpus else None
 
-training_args = TrainingArguments({"use_cuda_amp": True})
+training_args = TrainingArguments(fp16=True)
 training_args.per_device_train_batch_size = 1  # Value of 24 was recommended by the creator of the huggingsound library.
 training_args.num_train_epochs = num_train_epochs  
 training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to keep the less trained model, it's good to just overwrite the current model directory

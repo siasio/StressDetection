@@ -1,8 +1,8 @@
 data:
   dir: '/content/drive/MyDrive/RussianNationalCorpus'
   examples: '/content/drive/MyDrive/RussianNationalCorpus/all_data.csv'
-  helper: '/content/drive/MyDrive/RussianNationalCorpus/all_data20.csv'
-  eval: '/content/drive/MyDrive/RussianNationalCorpus/eval_data.csv'
+  helper: '/content/drive/MyDrive/RussianNationalCorpus/helper.csv'
+  eval: '/content/drive/MyDrive/RussianNationalCorpus/all_data20.csv'
   examples_per_query: '/content/drive/MyDrive/RussianNationalCorpus/examples'
   media: '/content/drive/MyDrive/RussianNationalCorpus/media'
   use_mp3: no  # Files are downloaded as .mp4. However, this sometimes causes errors and a conversion to .mp3 is needed.
