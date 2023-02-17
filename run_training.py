@@ -30,7 +30,7 @@ model_name = config['training']['web_model'] if config['training']['use_model_fr
     else model_folder
 model = SpeechRecognitionModel(model_name, device='cuda')
 output_dir = Path(config['training']['output_model_folder'])
-overwrite_output_dir = not args.not_overwrite_output_dir
+overwrite_output_dir = True  # not args.not_overwrite_output_dir
 num_train_epochs = args.num_train_epochs
 
 train_corpus = rnc.MultimodalCorpus(file=train_path)
@@ -57,7 +57,7 @@ token_set = TokenSet(tokens)
 
 model.finetune(
     output_dir, 
-    train_data=train_data[:len(train_data)//10],
+    train_data=train_data,
     eval_data=None, #eval_data, # the eval_data is optional
     token_set=token_set,  # token_set won't be used if the model is already fine-tuned and therefore has the token set already defined
     training_args=training_args

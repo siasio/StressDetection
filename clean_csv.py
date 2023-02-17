@@ -11,14 +11,16 @@ parser.add_argument('--config', type=str, default='default.yaml',
 args = parser.parse_args()
 config = read_config(CONFIG_DIR / args.config)
 
-RNC_PATH = config['data']['dir']
+RNC_PATH = Path(config['data']['dir'])
 CSV_FILE = RNC_PATH / config['data']['examples']
 EVAL_CSV = RNC_PATH / config['data']['eval']
 
 
 def delete_nonexistent(dataframe):
+    df_len = len(dataframe.index)
+    print(f'The file contains {df_len} examples.')
     new_dataframe = dataframe[dataframe.apply(lambda x: Path(x['filename']).is_file(), axis=1)]
-    new_df_len = len(dataframe.index)
+    new_df_len = len(new_dataframe.index)
     diff = df_len - new_df_len
     print(f'{diff} of the media files seem to be non-existent. If you proceed, these examples will be deleted. {new_df_len} examples will be left. Proceed? [y/n]')
     decision = input()
@@ -50,8 +52,6 @@ def drop_duplicates_and_overwrite(dataframe, file, change_to_mp3=False):
 
 for file in [EVAL_CSV, CSV_FILE]:
     df = pd.read_csv(file, delimiter='\t')
-    df_len = len(df.index)
-    print(f'The {str(file)} contains {df_len} examples.')
     df = delete_nonexistent(df)
     drop_duplicates_and_overwrite(df, file, change_to_mp3=config['data']['use_mp3'])
 

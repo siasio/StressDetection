@@ -17,9 +17,12 @@ CSV_FILE = RNC_PATH / config['data']['examples']
 MEDIA_PATH = RNC_PATH / config['data']['media']
 
 def MP4ToMP3(mp4, mp3):
-    FILETOCONVERT = AudioFileClip(mp4)
-    FILETOCONVERT.write_audiofile(mp3)
-    FILETOCONVERT.close()
+    try:
+        FILETOCONVERT = AudioFileClip(mp4)
+        FILETOCONVERT.write_audiofile(mp3)
+        FILETOCONVERT.close()
+    except UnicodeDecodeError:
+        os.remove(mp4)
 
 videos = list(MEDIA_PATH.glob('*.mp4'))
 
