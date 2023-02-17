@@ -5,6 +5,7 @@ data:
   eval: 'eval_data.csv'
   examples_per_query: 'examples'
   media: 'media'
+  cache: 'cache'
   use_mp3: no  # Files are downloaded as .mp4. However, this sometimes causes errors and a conversion to .mp3 is needed.
 
 query:

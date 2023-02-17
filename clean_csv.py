@@ -1,6 +1,7 @@
 import pandas as pd
 import argparse
 import os
+import subprocess
 from pathlib import Path
 
 from utils import read_config, CONFIG_DIR
@@ -16,10 +17,19 @@ CSV_FILE = RNC_PATH / config['data']['examples']
 EVAL_CSV = RNC_PATH / config['data']['eval']
 
 
+def get_length(input_video):
+    result = subprocess.run(['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', input_video], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    return float(result.stdout)
+
+
+def short_video(filename):
+    return get_length(str(filename)) < config['query']['seconds_threshold']
+
+
 def delete_nonexistent(dataframe):
     df_len = len(dataframe.index)
     print(f'The file contains {df_len} examples.')
-    new_dataframe = dataframe[dataframe.apply(lambda x: Path(x['filename']).is_file(), axis=1)]
+    new_dataframe = dataframe[dataframe.apply(lambda x: Path(x['filename']).is_file() and short_video(x['filename']), axis=1)]
     new_df_len = len(new_dataframe.index)
     diff = df_len - new_df_len
     print(f'{diff} of the media files seem to be non-existent. If you proceed, these examples will be deleted. {new_df_len} examples will be left. Proceed? [y/n]')

@@ -6,7 +6,6 @@ import re
 import os
 import shutil
 import argparse
-import cv2
 import nest_asyncio
 import yaml
 from tqdm import tqdm
@@ -81,15 +80,14 @@ def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, 
         else:
             return name not in base_df['filename'].values
 
+    def get_length(input_video):
+        result = subprocess.run(
+            ['ffprobe', '-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1',
+             input_video], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return float(result.stdout)
+
     def short_video(filename):
-        data = cv2.VideoCapture(str(filename))
-        frames = data.get(cv2.CAP_PROP_FRAME_COUNT)
-        fps = int(data.get(cv2.CAP_PROP_FPS))
-        if fps == 0:
-            print(f'FPS = 0 in {filename}')
-            return False
-        seconds = frames / fps
-        return seconds < config['query']['seconds_threshold']
+        return get_length(str(filename)) < config['query']['seconds_threshold']
 
     def keep_row(row, base_df):
         name = row['basename'] if one_sample_per_video else row['filename']

@@ -23,6 +23,7 @@ args = parser.parse_args()
 config = read_config(CONFIG_DIR / args.config)
 
 RNC_PATH = Path(config['data']['dir'])
+MEDIA_PATH = RNC_PATH / Path(config['data']['media'])
 train_path = RNC_PATH / config['data']['examples']  # Slash is a syntax of the pathlib library
 eval_path = RNC_PATH / config['data']['eval']
 model_folder = Path(config['training']['pretrained_model_folder'])
@@ -36,13 +37,11 @@ num_train_epochs = args.num_train_epochs
 train_corpus = rnc.MultimodalCorpus(file=train_path)
 eval_corpus = rnc.MultimodalCorpus(file=eval_path) if eval_path else None
 train_data = [
-    {"path": str(example.filepath), "transcription": clean_transcription(example.txt)} for example in train_corpus.data
+    {"path": str(MEDIA_PATH / example.filepath.name), "transcription": clean_transcription(example.txt)} for example in train_corpus.data
 ]
-train_data = train_data
 eval_data = [
-    {"path": str(example.filepath), "transcription": clean_transcription(example.txt)} for example in eval_corpus.data
+    {"path": str(MEDIA_PATH / example.filepath.name), "transcription": clean_transcription(example.txt)} for example in eval_corpus.data
 ] if eval_corpus else None
-
 training_args = TrainingArguments(fp16=config['training']['fp16'], eval_steps=config['training']['eval_steps'], logging_steps=config['training']['logging_steps'])
 training_args.per_device_train_batch_size = config['training']['batch_size']  # Value of 24 was recommended by the creator of the huggingsound library.
 training_args.num_train_epochs = num_train_epochs  
@@ -54,12 +53,15 @@ training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to
 tokens = ['q', 'w', 'e', 'r', 't', 'y', 'u']
 token_set = TokenSet(tokens)
 
+data_cache_dir = config['data']['cache']
+data_cache_dir = str(RNC_PATH / data_cache_dir) if data_cache_dir else None
 
 model.finetune(
     output_dir, 
     train_data=train_data,
-    eval_data=None, #eval_data, # the eval_data is optional
+    eval_data=eval_data, #eval_data, # the eval_data is optional
     token_set=token_set,  # token_set won't be used if the model is already fine-tuned and therefore has the token set already defined
-    training_args=training_args
+    training_args=training_args,
+    data_cache_dir=data_cache_dir
 )
 
