@@ -25,3 +25,6 @@ training:
   fp16: yes
   logging_steps: 100
   eval_steps: 100
+
+results:
+  dir: 'results'

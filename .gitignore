@@ -9,3 +9,5 @@ __pycache__
 .git
 *.cfg
 *.dll
+share/man/man1/ttx.1
+*.arrow
