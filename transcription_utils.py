@@ -2,9 +2,11 @@
 import re
 
 syllable_tokens = ['q', 'w', 'e', 'r', 't', 'y', 'u']
-cyrillic_tokens = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
+cyrillic_tokens_stress = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
           "ь", "ъ", "a", "y", "o", "ы", "э", "я", "ю", "ё", "и", "e",
           "\u0301a", "\u0301y", "\u0301o", "\u0301ы", "\u0301э", "\u0301я", "\u0301ю", "\u0301и", "\u0301e"]
+cyrillic_tokens = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
+          "ь", "ъ", "a", "y", "o", "ы", "э", "я", "ю", "ё", "и", "e"]
 
 def remove_braces_content(text):
   return re.sub('\[.*?\]', '', text)
@@ -63,6 +65,11 @@ def extract_stressed_syllables(phrase, change_to_latin=True):
 def get_phrase_with_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
     phrase = re.sub('[^\u0301\u0410-\u044f]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
+
+def get_phrase_no_stress(phrase):
+    phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
+    phrase = re.sub('[^\u0410-\u044f]', ' ', phrase)  # Change non-cyrillic characters into spaces
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
 

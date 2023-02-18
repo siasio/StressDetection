@@ -4,7 +4,8 @@ from pathlib import Path
 import os
 import argparse
 from transcription_utils import remove_braces_content, get_vowel, get_latin, \
-    extract_stressed_syllables, syllable_tokens, cyrillic_tokens, get_phrase_with_stress
+    extract_stressed_syllables, syllable_tokens, cyrillic_tokens, cyrillic_tokens_stress\
+    get_phrase_with_stress, get_phrase_no_stress
 import nest_asyncio
 from tqdm import tqdm
 
@@ -44,11 +45,11 @@ train_corpus = rnc.MultimodalCorpus(file=train_path)
 eval_corpus = rnc.MultimodalCorpus(file=eval_path) if eval_path else None
 train_data = [
     {"path": str(MEDIA_PATH / get_basename(example.filepath)),
-     "transcription": get_phrase_with_stress(example.txt)} for example in train_corpus.data
+     "transcription": get_phrase_no_stress(example.txt)} for example in train_corpus.data
 ]
 eval_data = [
     {"path": str(MEDIA_PATH / get_basename(example.filepath)),
-     "transcription": get_phrase_with_stress(example.txt)} for example in eval_corpus.data
+     "transcription": get_phrase_no_stress(example.txt)} for example in eval_corpus.data
 ] if eval_corpus else None
 training_args = TrainingArguments(fp16=config['training']['fp16'], eval_steps=config['training']['eval_steps'], logging_steps=config['training']['logging_steps'])
 training_args.per_device_train_batch_size = config['training']['batch_size']  # Value of 24 was recommended by the creator of the huggingsound library.
