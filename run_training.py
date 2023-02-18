@@ -4,7 +4,7 @@ from pathlib import Path
 import os
 import argparse
 from transcription_utils import remove_braces_content, get_vowel, get_latin, \
-    extract_stressed_syllables, syllable_tokens, cyrillic_tokens, cyrillic_tokens_stress\
+    extract_stressed_syllables, syllable_tokens, cyrillic_tokens, cyrillic_tokens_stress,\
     get_phrase_with_stress, get_phrase_no_stress
 import nest_asyncio
 from tqdm import tqdm
