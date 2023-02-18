@@ -1,5 +1,5 @@
 data:
-  dir: '/content/drive/MyDrive/RussianNationalCorpus/new_data'
+  dir: '/content/drive/MyDrive/RussianNationalCorpus/big_data'
   examples: 'train_data.csv'
   helper: 'helper.csv'
   eval: 'eval_data.csv'
@@ -18,10 +18,10 @@ training:
   # We can take either a fine-tuned or only pretrained model from the web.
   # Note that for a fine-tuned model a token set is already defined.
   web_model: 'facebook/wav2vec2-large-xlsr-53'  # a large model trained on 53 languages from the common_voice dataset
-  pretrained_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/model-23-02-16'
-  output_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/model-23-02-16'
+  pretrained_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/model-cyrillic'
+  output_model_folder: '/content/drive/MyDrive/RussianNationalCorpus/model-cyrillic'
   use_model_from_web: no
-  batch_size: 12
+  batch_size: 24
   fp16: yes
-  logging_steps: 100
-  eval_steps: 100
+  logging_steps: 50
+  eval_steps: 250

@@ -10,6 +10,7 @@ import nest_asyncio
 import yaml
 from tqdm import tqdm
 import time
+import subprocess
 
 from utils import read_config, CONFIG_DIR
 
@@ -38,13 +39,11 @@ pages_per_query = config['query']['pages_per_query']
 
 
 def download_samples(word, n_pages, examples_path):
-    # if try_num > 0:
-    #     time.sleep(10)
     try:
         mult = rnc.MultimodalCorpus(
             query=word,
-            p_count=1,
-            npp=n_pages * 5,  # Number of pages (by default there are 5 samples per page)
+            p_count=n_pages,  # Number of pages (by default there are 5 samples per page)
+            # npp=n_pages * 5,
             accent=1,  # Thanks to this argument we get stress annotations
             lang='ru',
             text='lexform',
@@ -59,9 +58,6 @@ def download_samples(word, n_pages, examples_path):
         mult.dump()  # This function saves the fetched examples in the examples_path file
     except:
         ...
-    # except:
-    #     print(f"Downloading {word} interrupted for time {try_num + 1}. Trying again in 10 seconds.")
-    #     download_samples(word, n_pages, examples_path, try_num=try_num + 1)
 
 
 def merge_clean_and_remove(csv_to_keep, csv_to_remove, remove=True, clean=True, copy_json=False):

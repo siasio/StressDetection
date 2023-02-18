@@ -3,7 +3,7 @@ from huggingsound import SpeechRecognitionModel
 from pathlib import Path
 import os
 import argparse
-from transcription_utils import remove_braces_content, get_vowel, get_latin, clean_transcription
+from transcription_utils import remove_braces_content, get_vowel, get_latin, extract_stressed_syllables
 
 parser = argparse.ArgumentParser()
 
@@ -47,7 +47,7 @@ if args.no_csv:
         with open(str(examples_directory / tf), 'r') as tf_file:
             tf_text = tf_file.read()
         phrases.append(remove_braces_content(tf_text))
-        gt = clean_transcription(tf_text)
+        gt = extract_stressed_syllables(tf_text)
         gt_transcriptions.append(gt)
         phrases_vowels.append(''.join([get_vowel(vowel) for vowel in gt]))
 else:
@@ -59,7 +59,7 @@ else:
     for example in examples:
         audio_paths.append(RNC_PATH / example.filepath)
         phrases.append(remove_braces_content(example.txt))
-        gt = clean_transcription(example.txt)
+        gt = extract_stressed_syllables(example.txt)
         gt_transcriptions.append(gt)
         phrases_vowels.append(''.join([get_vowel(vowel) for vowel in gt]))
 

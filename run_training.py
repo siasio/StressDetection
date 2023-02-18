@@ -3,7 +3,8 @@ from huggingsound import SpeechRecognitionModel, TrainingArguments, ModelArgumen
 from pathlib import Path
 import os
 import argparse
-from transcription_utils import remove_braces_content, get_vowel, get_latin, clean_transcription
+from transcription_utils import remove_braces_content, get_vowel, get_latin, \
+    extract_stressed_syllables, syllable_tokens, cyrillic_tokens, get_phrase_with_stress
 import nest_asyncio
 from tqdm import tqdm
 
@@ -34,13 +35,20 @@ output_dir = Path(config['training']['output_model_folder'])
 overwrite_output_dir = True  # not args.not_overwrite_output_dir
 num_train_epochs = args.num_train_epochs
 
+def get_basename(path: Path):
+    # When using RNC on different platforms, the paths which were saved in a csv with platform-specific separators
+    # are incorrectly loaded by an RNC corpus.
+    return str(path).rsplit('/')[-1].rsplit('\\')[-1]
+
 train_corpus = rnc.MultimodalCorpus(file=train_path)
 eval_corpus = rnc.MultimodalCorpus(file=eval_path) if eval_path else None
 train_data = [
-    {"path": str(MEDIA_PATH / example.filepath.name), "transcription": clean_transcription(example.txt)} for example in train_corpus.data
+    {"path": str(MEDIA_PATH / get_basename(example.filepath)),
+     "transcription": get_phrase_with_stress(example.txt)} for example in train_corpus.data
 ]
 eval_data = [
-    {"path": str(MEDIA_PATH / example.filepath.name), "transcription": clean_transcription(example.txt)} for example in eval_corpus.data
+    {"path": str(MEDIA_PATH / get_basename(example.filepath)),
+     "transcription": get_phrase_with_stress(example.txt)} for example in eval_corpus.data
 ] if eval_corpus else None
 training_args = TrainingArguments(fp16=config['training']['fp16'], eval_steps=config['training']['eval_steps'], logging_steps=config['training']['logging_steps'])
 training_args.per_device_train_batch_size = config['training']['batch_size']  # Value of 24 was recommended by the creator of the huggingsound library.
@@ -50,8 +58,7 @@ training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to
 #training_args.save_steps = 100  # Works only if save strategy is 'steps'. Default value is 500.
 #training_args.ignore_skip_dat = True
 
-tokens = ['q', 'w', 'e', 'r', 't', 'y', 'u']
-token_set = TokenSet(tokens)
+token_set = TokenSet(cyrillic_tokens)
 
 data_cache_dir = config['data']['cache']
 data_cache_dir = str(RNC_PATH / data_cache_dir) if data_cache_dir else None
