@@ -69,6 +69,7 @@ def get_phrase_with_stress(phrase):
 
 def get_phrase_no_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
+    phrase = re.sub('[\u0301]', '', phrase)  # Remove stress marks
     phrase = re.sub('[^\u0410-\u044f]', ' ', phrase)  # Change non-cyrillic characters into spaces
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
