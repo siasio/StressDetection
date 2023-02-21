@@ -11,7 +11,7 @@ from tqdm import tqdm
 
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 
-from utils import read_config, CONFIG_DIR
+from utils import read_config, CONFIG_DIR, get_basename
 
 nest_asyncio.apply()
 
@@ -36,10 +36,7 @@ output_dir = Path(config['training']['output_model_folder'])
 overwrite_output_dir = True  # not args.not_overwrite_output_dir
 num_train_epochs = args.num_train_epochs
 
-def get_basename(path: Path):
-    # When using RNC on different platforms, the paths which were saved in a csv with platform-specific separators
-    # are incorrectly loaded by an RNC corpus.
-    return str(path).rsplit('/')[-1].rsplit('\\')[-1]
+
 
 train_corpus = rnc.MultimodalCorpus(file=train_path)
 eval_corpus = rnc.MultimodalCorpus(file=eval_path) if eval_path else None

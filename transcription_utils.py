@@ -4,7 +4,10 @@ import re
 syllable_tokens = ['q', 'w', 'e', 'r', 't', 'y', 'u']
 cyrillic_tokens_stress = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
           "ь", "ъ", "a", "y", "o", "ы", "э", "я", "ю", "ё", "и", "e",
-          "\u0301a", "\u0301y", "\u0301o", "\u0301ы", "\u0301э", "\u0301я", "\u0301ю", "\u0301и", "\u0301e"]
+          "а\u0301", "у\u0301", "о\u0301", "ы\u0301", "э\u0301", "я\u0301", "ю\u0301", "и\u0301", "е\u0301"]
+cyrillic_tokens_stress_soft = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
+          "ь", "a", "y", "o", "ы", "э", "и",
+          "a\u0301", "у\u0301", "о\u0301", "ы\u0301", "э\u0301", "и\u0301"]
 cyrillic_tokens = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
           "ь", "ъ", "a", "y", "o", "ы", "э", "я", "ю", "ё", "и", "e"]
 
@@ -36,6 +39,19 @@ latin_to_vowels = {
         }
 fricative_nonpalatalized = {'ш', 'ж', 'ц'}
 
+non_palatalized_vowels = {
+    'а': 'а',
+    'я': 'а',
+    'у': 'у',
+    'ю': 'у',
+    'э': 'э',
+    'е': 'э',
+    'о': 'о',
+    'ё': 'о\u0301',
+    'и': 'и',
+    'ы': 'ы',
+}
+
 def get_vowel(latin_letter):
   return latin_to_vowels[latin_letter]
 
@@ -64,13 +80,34 @@ def extract_stressed_syllables(phrase, change_to_latin=True):
 
 def get_phrase_with_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
-    phrase = re.sub('[^\u0301\u0410-\u044f]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    phrase = re.sub('[^\u0301\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
+
+def get_phrase_with_stress_soft(phrase):
+    def replace_signs(text):
+        for key in ['а', 'э', 'у', 'о', 'ы', 'я', 'е', 'ю', 'ё', 'и']:
+            text = text.replace(rf'ь{key}', rf'ьй{non_palatalized_vowels[key]}')
+            text = text.replace(rf'ъ{key}', rf'й{non_palatalized_vowels[key]}')
+        return text
+
+    def replace_palatalized(text):
+        for key in ['я', 'е', 'ю', 'ё']:
+            text = text.replace(f' {key}', f' й{non_palatalized_vowels[key]}')
+            text = text.replace(key, f'ь{non_palatalized_vowels[key]}')
+
+        return text.replace('йь', 'й')
+
+    phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
+    phrase = re.sub('[^\u0301\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    phrase = replace_signs(phrase)
+    phrase = replace_palatalized(phrase)
+
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
 def get_phrase_no_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
     phrase = re.sub('[\u0301]', '', phrase)  # Remove stress marks
-    phrase = re.sub('[^\u0410-\u044f]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    phrase = re.sub('[^\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
 
