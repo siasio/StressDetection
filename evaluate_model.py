@@ -17,32 +17,13 @@ args = parser.parse_args()
 
 config = read_config(CONFIG_DIR / args.config)
 
-# parser = argparse.ArgumentParser()
-#
-# parser.add_argument('--transcribe_sents', type=int, dest='transcribe', default=1,
-#         help='How many sentences to transcribe. 0 means: don\'t produce transcrtiptions. -1 means: run on all examples from the csv file.')
-# parser.add_argument('--evaluate_sents', type=int, dest='evaluate', default=10,
-#         help='On how many sentences to run the evaluation. 0 means: don\'t run the evaluation. -1 means: run on all examples from the csv file.')
-# parser.add_argument('--data_path', default='',
-#         help='''Path to the folder containing the csv file and the model folder.
-#         Defaults to empty string '' which might work if data sits in the current working directory.
-#         If it doesn't work, then you need to specify the path.''')
-# parser.add_argument('--no_csv', action='store_true',
-#         help='With this flag, --examples_folder should be used instead of --examples_basename')
-# parser.add_argument('--examples_basename', default='all_data20.csv',
-#         help='Name of the csv file, needs to be located in the data path.')
-# parser.add_argument('--examples_folder', default='other_media',
-#         help='Name of the csv file, needs to be located in the data path.')
-# parser.add_argument('--model_folder', default='best_model',
-#         help='Name of the folder containing the model, needs to be located inside the data path folder.')
-# args = parser.parse_args()
 
 transcribe = 10000
 evaluate = 10000
 
 RNC_PATH = Path(config['data']['dir'])
 MEDIA_PATH = RNC_PATH / config['data']['media']
-model = SpeechRecognitionModel(Path(config['training']['output_model_folder']) / 'stressed')
+model = SpeechRecognitionModel(Path(config['training']['output_model_folder']))
 
 # phrases_vowels = []
 
