@@ -2,9 +2,10 @@ import rnc
 from huggingsound import SpeechRecognitionModel
 from pathlib import Path
 import os
+import random
 import argparse
 import nest_asyncio
-from transcription_utils import remove_braces_content, get_vowel, get_latin, extract_stressed_syllables, get_phrase_no_stress
+from transcription_utils import remove_braces_content, get_vowel, get_latin, extract_stressed_syllables, get_phrase_no_stress, get_phrase_with_stress
 
 from utils import read_config, CONFIG_DIR, get_basename
 
@@ -23,7 +24,10 @@ evaluate = 10000
 
 RNC_PATH = Path(config['data']['dir'])
 MEDIA_PATH = RNC_PATH / config['data']['media']
-model = SpeechRecognitionModel(Path(config['training']['output_model_folder']))
+model_path = Path(config['training']['output_model_folder'])
+if config['training'].get('subdir', False):
+    model_path = model_path / config['training']['subdir']
+model = SpeechRecognitionModel(model_path)
 
 # phrases_vowels = []
 
@@ -48,18 +52,22 @@ examples = mult.data
 if transcribe >= 0 and evaluate >= 0:
     examples = examples[:max(transcribe,evaluate)]
 audio_paths = [str(MEDIA_PATH / get_basename(example.filepath)) for example in examples]
-phrases = [get_phrase_no_stress(example.txt) for example in examples]
+phrases = [get_phrase_with_stress(example.txt) for example in examples]
         # gt = extract_stressed_syllables(example.txt)f
         # gt_transcriptions.append(gt)
         # phrases_vowels.append(''.join([get_vowel(vowel) for vowel in gt]))
 
 if transcribe:
-    transcriptions = model.transcribe(audio_paths[-32:], batch_size=8)
+    transcriptions = model.transcribe(audio_paths, batch_size=12)
+    ph_tr = list(zip(phrases, transcriptions))
+    random.shuffle(ph_tr)
     # cyrillic_transcriptions = [''.join([get_vowel(vowel) for vowel in tr['transcription']]) for tr in transcriptions]
     print('\n'.join(['\n'.join([phr, f'Transcribed: {ct}'])
-        for phr, ct in zip(phrases[-32:], transcriptions)]) )
+        for phr, ct in ph_tr[:32]]) )
 
 if evaluate:
+    transcriptions = [t.replace('\u0301', '') for t in transcriptions]
+    phrases = [p.replace('\u0301', '') for p in phrases]
     train_data = [ {"path": str(audio_path), "transcription": gt} for audio_path, gt in zip(audio_paths, phrases) ]
-    evaluation = model.evaluate(train_data, inference_batch_size=8, metrics_batch_size=8)
+    evaluation = model.evaluate(references=train_data, predictions=transcriptions) #, inference_batch_size=8, metrics_batch_size=8)
     print(evaluation)

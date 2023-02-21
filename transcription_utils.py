@@ -97,12 +97,22 @@ def get_phrase_with_stress_soft(phrase):
 
         return text.replace('йь', 'й')
 
+    def clean_i(text):
+        return re.sub(r'([жш])и', r'\1ы', text)
+
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
     phrase = re.sub('[^\u0301\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    phrase = clean_i(phrase)
     phrase = replace_signs(phrase)
     phrase = replace_palatalized(phrase)
 
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
+
+def soft_to_original(phrase):
+    def recreate_i(text):
+        return re.sub(r'([жш])ы', r'\1и', text)
+
+    phrase = recreate_i(phrase)
 
 def get_phrase_no_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
