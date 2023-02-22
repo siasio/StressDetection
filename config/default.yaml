@@ -18,14 +18,16 @@ training:
   # We can take either a fine-tuned or only pretrained model from the web.
   # Note that for a fine-tuned model a token set is already defined.
   web_model: 'facebook/wav2vec2-large-xlsr-53'  # a large model trained on 53 languages from the common_voice dataset
-  pretrained_model_folder: 'model'
-  output_model_folder: 'model'
-  subdir: 'stressed_correct'
+  pretrained_model_folder: 'model-02-22'
+  output_model_folder: 'model-02-22'
+  subdir: 'stressed'
   use_model_from_web: no
   batch_size: 1
+  accumulation_steps: 1
+  adam_8bit: yes
   fp16: yes
   logging_steps: 100
-  eval_steps: 100
+  eval_steps: 500
 
 results:
   dir: 'results'

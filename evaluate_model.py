@@ -1,10 +1,12 @@
 import rnc
 from huggingsound import SpeechRecognitionModel
+from huggingsound.normalizer import DefaultTextNormalizer
 from pathlib import Path
 import os
 import random
 import argparse
 import nest_asyncio
+import json
 from transcription_utils import remove_braces_content, get_vowel, get_latin, extract_stressed_syllables, get_phrase_no_stress, get_phrase_with_stress
 
 from utils import read_config, CONFIG_DIR, get_basename
@@ -19,8 +21,8 @@ args = parser.parse_args()
 config = read_config(CONFIG_DIR / args.config)
 
 
-transcribe = 10000
-evaluate = 10000
+transcribe = 32
+evaluate = 32
 
 RNC_PATH = Path(config['data']['dir'])
 MEDIA_PATH = RNC_PATH / config['data']['media']
@@ -46,28 +48,44 @@ model = SpeechRecognitionModel(model_path)
 #         gt_transcriptions.append(gt)
 #         phrases_vowels.append(''.join([get_vowel(vowel) for vowel in gt]))
 # else:
-examples_file = RNC_PATH / config['data']['eval']  # Slash is a syntax of the pathlib library
-mult = rnc.MultimodalCorpus(file=examples_file)
-examples = mult.data
-if transcribe >= 0 and evaluate >= 0:
-    examples = examples[:max(transcribe,evaluate)]
-audio_paths = [str(MEDIA_PATH / get_basename(example.filepath)) for example in examples]
-phrases = [get_phrase_with_stress(example.txt) for example in examples]
-        # gt = extract_stressed_syllables(example.txt)f
-        # gt_transcriptions.append(gt)
-        # phrases_vowels.append(''.join([get_vowel(vowel) for vowel in gt]))
+preds = Path(config['results']['dir']) / 'transcriptions_old_stressed.json'
+gt = Path(config['results']['dir']) / 'data_old_stressed.json'
 
-if transcribe:
-    transcriptions = model.transcribe(audio_paths, batch_size=12)
+if preds.is_file():
+    examples_file = RNC_PATH / config['data']['eval']  # Slash is a syntax of the pathlib library
+    mult = rnc.MultimodalCorpus(file=examples_file)
+    examples = mult.data
+    if transcribe >= 0 and evaluate >= 0:
+        examples = examples[:max(transcribe,evaluate)]
+    audio_paths = [str(MEDIA_PATH / get_basename(example.filepath)) for example in examples]
+    phrases = [get_phrase_with_stress(example.txt) for example in examples]
+            # gt = extract_stressed_syllables(example.txt)f
+            # gt_transcriptions.append(gt)
+            # phrases_vowels.append(''.join([get_vowel(vowel) for vowel in gt]))
+
+
+    transcriptions = model.transcribe(audio_paths, batch_size=8)
     ph_tr = list(zip(phrases, transcriptions))
     random.shuffle(ph_tr)
     # cyrillic_transcriptions = [''.join([get_vowel(vowel) for vowel in tr['transcription']]) for tr in transcriptions]
     print('\n'.join(['\n'.join([phr, f'Transcribed: {ct}'])
         for phr, ct in ph_tr[:32]]) )
 
-if evaluate:
-    transcriptions = [t.replace('\u0301', '') for t in transcriptions]
-    phrases = [p.replace('\u0301', '') for p in phrases]
-    train_data = [ {"path": str(audio_path), "transcription": gt} for audio_path, gt in zip(audio_paths, phrases) ]
-    evaluation = model.evaluate(references=train_data, predictions=transcriptions) #, inference_batch_size=8, metrics_batch_size=8)
-    print(evaluation)
+
+
+    # transcriptions = [{'transcription': t['transcription']} for t in transcriptions]
+    # # phrases = [p.replace('\u0301', '') for p in phrases]
+    # train_data = [ {"path": str(audio_path), "transcription": gt} for audio_path, gt in zip(audio_paths, phrases) ]
+#     with open(preds, 'w') as f:
+#         json.dump(transcriptions, f)
+#     with open(gt, 'w') as f:
+#         json.dump(train_data, f)
+#
+# with open(preds, 'r') as f:
+#     transcriptions = json.load(f)
+#
+# with open(gt, 'r') as f:
+#     train_data = json.load(f)
+#
+# evaluation = model.evaluate(references=train_data, predictions=transcriptions, text_normalizer=DefaultTextNormalizer(model.token_set)) #, inference_batch_size=8, metrics_batch_size=8)
+# print(evaluation)

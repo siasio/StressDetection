@@ -11,3 +11,5 @@ __pycache__
 *.dll
 share/man/man1/ttx.1
 *.arrow
+model-02-22
+results

@@ -80,7 +80,8 @@ def extract_stressed_syllables(phrase, change_to_latin=True):
 
 def get_phrase_with_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
-    phrase = re.sub('[^\u0301\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    phrase = re.sub('[^\u0300\u0301\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    phrase = phrase.replace('\u0300', '\u0301')
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
 def get_phrase_with_stress_soft(phrase):
@@ -101,7 +102,8 @@ def get_phrase_with_stress_soft(phrase):
         return re.sub(r'([жш])и', r'\1ы', text)
 
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
-    phrase = re.sub('[^\u0301\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    phrase = re.sub('[^\u0300\u0301\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    phrase = phrase.replace('\u0300', '\u0301')  # Should be '' or \u0301 but I realized it too late
     phrase = clean_i(phrase)
     phrase = replace_signs(phrase)
     phrase = replace_palatalized(phrase)
@@ -116,7 +118,7 @@ def soft_to_original(phrase):
 
 def get_phrase_no_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
-    phrase = re.sub('[\u0301]', '', phrase)  # Remove stress marks
+    phrase = re.sub('[\u0300\u0301]', '', phrase)  # Remove stress marks
     phrase = re.sub('[^\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 

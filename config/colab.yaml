@@ -21,7 +21,9 @@ training:
   pretrained_model_folder: '/content/model-cyrillic-stress'
   output_model_folder: '/content/model-cyrillic-stress'
   use_model_from_web: no
-  batch_size: 12
+  batch_size: 16
+  accumulation_steps: 4
+  adam_8bit: yes
   fp16: yes
   logging_steps: 50
   eval_steps: 250

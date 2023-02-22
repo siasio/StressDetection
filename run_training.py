@@ -48,9 +48,21 @@ eval_data = [
     {"path": str(MEDIA_PATH / get_basename(example.filepath)),
      "transcription": get_phrase_with_stress_soft(example.txt)} for example in eval_corpus.data
 ] if eval_corpus else None
-training_args = TrainingArguments(fp16=config['training']['fp16'], eval_steps=config['training']['eval_steps'], logging_steps=config['training']['logging_steps'])
-training_args.per_device_train_batch_size = config['training']['batch_size']  # Value of 24 was recommended by the creator of the huggingsound library.
-training_args.num_train_epochs = num_train_epochs  
+
+accum_steps = config['training']['accumulation_steps']
+batch_size = config['training']['batch_size']
+steps_per_epoch = args.num_train_epochs // (accum_steps * batch_size)
+
+training_args = TrainingArguments(fp16=config['training']['fp16'],
+                                  gradient_accumulation_steps=accum_steps,
+                                  per_device_train_batch_size=batch_size,
+                                  use_8bit_optimizer=config['training']['adam_8bit'],
+                                  eval_steps=config['training']['eval_steps'],
+                                  logging_steps=config['training']['logging_steps'],
+                                  lr_warmup_steps=steps_per_epoch,
+                                  lr_decay_steps=steps_per_epoch,
+                                  gradient_checkpointing=True)
+training_args.num_train_epochs = args.num_train_epochs
 training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to keep the less trained model, it's good to just overwrite the current model directory
 #training_args.save_strategy = 'epoch'  # Default save strategy is 'steps'. If we use 'epoch' instead, a model checkpoint will be saved in the end of every epoch.
 #training_args.save_steps = 100  # Works only if save strategy is 'steps'. Default value is 500.
@@ -61,12 +73,15 @@ token_set = TokenSet(cyrillic_tokens_stress_soft)
 data_cache_dir = config['data']['cache']
 data_cache_dir = str(RNC_PATH / data_cache_dir) if data_cache_dir else None
 
+# model_args = ModelArguments(apply_spec_augment=False, mask_time_length=4, mask_feature_length=4)
+
 model.finetune(
-    output_dir, 
+    output_dir,
     train_data=train_data,
     eval_data=eval_data, #eval_data, # the eval_data is optional
     token_set=token_set,  # token_set won't be used if the model is already fine-tuned and therefore has the token set already defined
     training_args=training_args,
+    # model_args=model_args,
     data_cache_dir=data_cache_dir
 )
 
