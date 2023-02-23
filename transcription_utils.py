@@ -2,17 +2,69 @@
 import re
 
 syllable_tokens = ['q', 'w', 'e', 'r', 't', 'y', 'u']
-cyrillic_tokens_stress = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
-          "ь", "ъ", "a", "y", "o", "ы", "э", "я", "ю", "ё", "и", "e",
-          "а\u0301", "у\u0301", "о\u0301", "ы\u0301", "э\u0301", "я\u0301", "ю\u0301", "и\u0301", "е\u0301"]
-cyrillic_tokens_stress_soft = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
-          "ь", "a", "y", "o", "ы", "э", "и",
-          "a\u0301", "у\u0301", "о\u0301", "ы\u0301", "э\u0301", "и\u0301"]
+
+
+cyrillic_to_latin = {
+    "а\u0301": "á",
+    "у\u0301": "ú",
+    "о\u0301": "ó",
+    "ы\u0301": "ý",
+    "э\u0301": "é",
+    "я\u0301": "à",
+    "ю\u0301": "ù",
+    "и\u0301": "ì",
+    "е\u0301": "è",
+    "б": "b",
+    "в": "v",
+    "г": "g",
+    "д": "d",
+    "ж": "ż",
+    "з": "z",
+    "й": "j",
+    "к": "k",
+    "л": "l",
+    "м": "m",
+    "н": "n",
+    "п": "p",
+    "p": "r",
+    "c": "s",
+    "т": "t",
+    "ф": "f",
+    "x": "h",
+    "ц": "c",
+    "ч": "ć",
+    "ш": "š",
+    "щ": "ś",
+    "ь": "ï",
+    "ъ": "ı",
+    "a": "a",
+    "y": "u",
+    "o": "o",
+    "ы": "y",
+    "э": "e",
+    "я": "â",
+    "ю": "û",
+    "ё": "ò",
+    "и": "i",
+    "e": "ê"
+}
+
+cyrillic_tokens_stress = ["а\u0301", "у\u0301", "о\u0301", "ы\u0301", "э\u0301", "я\u0301", "ю\u0301", "и\u0301", "е\u0301",
+          "б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
+          "ь", "ъ", "a", "y", "o", "ы", "э", "я", "ю", "ё", "и", "e"]
+latin_tokens_stress = [cyrillic_to_latin[ch] for ch in cyrillic_tokens_stress]
+cyrillic_tokens_stress_soft = ["a\u0301", "у\u0301", "о\u0301", "ы\u0301", "э\u0301", "и\u0301",
+          "б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
+          "ь", "a", "y", "o", "ы", "э", "и"]
+latin_tokens_stress_soft = [cyrillic_to_latin[ch] for ch in cyrillic_tokens_stress_soft]
 cyrillic_tokens = ["б", "в", "г", "д", "ж", "з", "й", "к", "л", "м", "н", "п", "p", "c", "т", "ф", "x", "ц", "ч", "ш", "щ",
           "ь", "ъ", "a", "y", "o", "ы", "э", "я", "ю", "ё", "и", "e"]
+latin_tokens = [cyrillic_to_latin[ch] for ch in cyrillic_tokens]
 
 def remove_braces_content(text):
   return re.sub('\[.*?\]', '', text)
+
+
 
 vowels_to_latin = {
         'а': 'q',
@@ -82,6 +134,8 @@ def get_phrase_with_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
     phrase = re.sub('[^\u0300\u0301\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
     phrase = phrase.replace('\u0300', '\u0301')
+    for ch in cyrillic_tokens_stress:
+        phrase = phrase.replace(ch, cyrillic_to_latin[ch])
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
 def get_phrase_with_stress_soft(phrase):
@@ -107,6 +161,8 @@ def get_phrase_with_stress_soft(phrase):
     phrase = clean_i(phrase)
     phrase = replace_signs(phrase)
     phrase = replace_palatalized(phrase)
+    for ch in cyrillic_tokens_stress_soft:
+        phrase = phrase.replace(ch, cyrillic_to_latin[ch])
 
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
@@ -120,6 +176,8 @@ def get_phrase_no_stress(phrase):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
     phrase = re.sub('[\u0300\u0301]', '', phrase)  # Remove stress marks
     phrase = re.sub('[^\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
+    for ch in cyrillic_tokens:
+        phrase = phrase.replace(ch, cyrillic_to_latin[ch])
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
 

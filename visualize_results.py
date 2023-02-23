@@ -11,8 +11,8 @@ parser.add_argument('--config', default='default.yaml')
 args = parser.parse_args()
 
 config = read_config(CONFIG_DIR / args.config)
-RESULTS_PATH = Path(config['results']['dir']) / 'trainer_state.json'
-RESULTS_FIRST_PATH = Path(config['results']['dir']) / 'trainer_state_first.json'
+RESULTS_PATH = Path('model') / '22-02-strssed-soft' / 'trainer_state_2.json'
+RESULTS_FIRST_PATH = Path('model') / 'not_stressed_correct' / 'trainer_state.json'
 
 def get_stats(path, mult=False):
     with open(path, 'r') as r:

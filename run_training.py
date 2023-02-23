@@ -4,7 +4,9 @@ from pathlib import Path
 import os
 import argparse
 from transcription_utils import remove_braces_content, get_vowel, get_latin, \
-    extract_stressed_syllables, syllable_tokens, cyrillic_tokens, cyrillic_tokens_stress, cyrillic_tokens_stress_soft, \
+    extract_stressed_syllables, syllable_tokens, \
+    latin_tokens, latin_tokens_stress, latin_tokens_stress_soft, \
+    cyrillic_tokens, cyrillic_tokens_stress, cyrillic_tokens_stress_soft, \
     get_phrase_with_stress, get_phrase_with_stress_soft, get_phrase_no_stress
 import nest_asyncio
 from tqdm import tqdm
@@ -51,7 +53,7 @@ eval_data = [
 
 accum_steps = config['training']['accumulation_steps']
 batch_size = config['training']['batch_size']
-steps_per_epoch = args.num_train_epochs // (accum_steps * batch_size)
+steps_per_epoch = len(train_data) // (accum_steps * batch_size)
 
 training_args = TrainingArguments(fp16=config['training']['fp16'],
                                   gradient_accumulation_steps=accum_steps,
@@ -61,6 +63,7 @@ training_args = TrainingArguments(fp16=config['training']['fp16'],
                                   logging_steps=config['training']['logging_steps'],
                                   lr_warmup_steps=steps_per_epoch,
                                   lr_decay_steps=steps_per_epoch,
+                                  learning_rate=1e-4,
                                   gradient_checkpointing=True)
 training_args.num_train_epochs = args.num_train_epochs
 training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to keep the less trained model, it's good to just overwrite the current model directory
@@ -68,7 +71,7 @@ training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to
 #training_args.save_steps = 100  # Works only if save strategy is 'steps'. Default value is 500.
 #training_args.ignore_skip_dat = True
 
-token_set = TokenSet(cyrillic_tokens_stress_soft)
+token_set = TokenSet(latin_tokens_stress_soft)
 
 data_cache_dir = config['data']['cache']
 data_cache_dir = str(RNC_PATH / data_cache_dir) if data_cache_dir else None
