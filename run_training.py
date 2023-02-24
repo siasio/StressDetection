@@ -44,11 +44,11 @@ train_corpus = rnc.MultimodalCorpus(file=train_path)
 eval_corpus = rnc.MultimodalCorpus(file=eval_path) if eval_path else None
 train_data = [
     {"path": str(MEDIA_PATH / get_basename(example.filepath)),
-     "transcription": get_phrase_with_stress_soft(example.txt)} for example in train_corpus.data
+     "transcription": get_phrase_no_stress(example.txt)} for example in train_corpus.data
 ]
 eval_data = [
     {"path": str(MEDIA_PATH / get_basename(example.filepath)),
-     "transcription": get_phrase_with_stress_soft(example.txt)} for example in eval_corpus.data
+     "transcription": get_phrase_no_stress(example.txt)} for example in eval_corpus.data
 ] if eval_corpus else None
 
 accum_steps = config['training']['accumulation_steps']
@@ -71,7 +71,7 @@ training_args.overwrite_output_dir = overwrite_output_dir  # If we don't want to
 #training_args.save_steps = 100  # Works only if save strategy is 'steps'. Default value is 500.
 #training_args.ignore_skip_dat = True
 
-token_set = TokenSet(latin_tokens_stress_soft)
+token_set = TokenSet(latin_tokens)
 
 data_cache_dir = config['data']['cache']
 data_cache_dir = str(RNC_PATH / data_cache_dir) if data_cache_dir else None
@@ -81,7 +81,7 @@ data_cache_dir = str(RNC_PATH / data_cache_dir) if data_cache_dir else None
 model.finetune(
     output_dir,
     train_data=train_data,
-    eval_data=eval_data, #eval_data, # the eval_data is optional
+    eval_data=eval_data, # the eval_data is optional
     token_set=token_set,  # token_set won't be used if the model is already fine-tuned and therefore has the token set already defined
     training_args=training_args,
     # model_args=model_args,
