@@ -167,18 +167,40 @@ def get_phrase_with_stress_soft(phrase):
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
 
 def soft_to_original(phrase):
-    def recreate_i(text):
+    def retrieve_signs(text):
+        for key in ['а', 'э', 'у', 'о', 'ы', 'я', 'е', 'ю', 'ё', 'и']:
+            text = text.replace(rf'ьй{non_palatalized_vowels[key]}', key)
+        return text.replace(rf'ъь', rf'ъ')
+
+    def retrieve_palatalized(text):
+        for key in ['я', 'е', 'ю', 'ё']:
+            text = text.replace(f'й{non_palatalized_vowels[key]}', key)
+            text = text.replace(f'ь{non_palatalized_vowels[key]}', key)
+
+        return text.replace('йь', 'й')
+
+    def retrieve_i(text):
         return re.sub(r'([жш])ы', r'\1и', text)
 
-    phrase = recreate_i(phrase)
+    for k in cyrillic_to_latin.keys():
+        phrase = phrase.replace(cyrillic_to_latin[k], k)
+    phrase = retrieve_i(phrase)
+    phrase = retrieve_palatalized(phrase)
+    phrase = retrieve_signs(phrase)
+    return phrase
 
-def get_phrase_no_stress(phrase):
+def get_phrase_no_stress(phrase, change_to_latin=True):
     phrase = re.sub(r'\[.*?\]', '', phrase).lower()  # Remove braces content (it indicates a speaker)
     phrase = re.sub('[\u0300\u0301]', '', phrase)  # Remove stress marks
     phrase = re.sub('[^\u0401\u0410-\u044f\u0451]', ' ', phrase)  # Change non-cyrillic characters into spaces
     for ch in cyrillic_tokens:
         phrase = phrase.replace(ch, cyrillic_to_latin[ch])
     return re.sub(r'\s+', ' ', phrase)  # Change multiple spaces into single spaces
+
+def back_to_cyrillic(phrase):
+    for ch in cyrillic_tokens_stress:
+        phrase = phrase.replace(cyrillic_to_latin[ch], ch)
+    return phrase
 
 
 def add_stresses(phrase, pred):

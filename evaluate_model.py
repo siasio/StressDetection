@@ -8,7 +8,7 @@ import argparse
 import nest_asyncio
 import json
 from transcription_utils import remove_braces_content, get_vowel, get_latin, extract_stressed_syllables,\
-    get_phrase_no_stress, get_phrase_with_stress, get_phrase_with_stress_soft
+    get_phrase_no_stress, get_phrase_with_stress, get_phrase_with_stress_soft, soft_to_original, back_to_cyrillic
 
 from utils import read_config, CONFIG_DIR, get_basename
 
@@ -32,20 +32,23 @@ if config['training'].get('subdir', False):
     model_path = model_path / config['training']['subdir']
 model = SpeechRecognitionModel(model_path)
 
+examples_file = RNC_PATH / config['data']['eval']  # Slash is a syntax of the pathlib library
+mult = rnc.MultimodalCorpus(file=examples_file)
+examples = mult.data
+audio_paths = [str(MEDIA_PATH / get_basename(example.filepath)) for example in examples]
+phrases = [get_phrase_no_stress(example.txt) for example in examples]
+train_data = [{"path": str(audio_path), "transcription": gt} for audio_path, gt in zip(audio_paths, phrases)]
+
+
 preds = Path(config['results']['dir']) / 'transcriptions_real_stressed_soft.json'
 gt = Path(config['results']['dir']) / 'data_real_stressed_soft.json'
 
 if not preds.is_file():
-    examples_file = RNC_PATH / config['data']['eval']  # Slash is a syntax of the pathlib library
-    mult = rnc.MultimodalCorpus(file=examples_file)
-    examples = mult.data
     if transcribe >= 0 and evaluate >= 0:
         examples = examples[:max(transcribe,evaluate)]
-    audio_paths = [str(MEDIA_PATH / get_basename(example.filepath)) for example in examples]
-    phrases = [get_phrase_with_stress_soft(example.txt) for example in examples]
     transcriptions = model.transcribe(audio_paths, batch_size=8)
     transcriptions = [{'transcription': t['transcription']} for t in transcriptions]
-    train_data = [ {"path": str(audio_path), "transcription": gt} for audio_path, gt in zip(audio_paths, phrases) ]
+
     with open(preds, 'w') as f:
         json.dump(transcriptions, f)
     with open(gt, 'w') as f:
@@ -54,16 +57,19 @@ if not preds.is_file():
 with open(preds, 'r') as f:
     transcriptions = json.load(f)
 
-with open(gt, 'r') as f:
-    train_data = json.load(f)
+# with open(gt, 'r') as f:
+#     train_data = json.load(f)
+
+transcriptions = [{'transcription': get_phrase_no_stress(soft_to_original(t['transcription']))} for t in transcriptions]
 
 print(model.token_set)
 text_normalizer = DefaultTextNormalizer(model.token_set)
 evaluation = model.evaluate(references=train_data, predictions=transcriptions, text_normalizer=DefaultTextNormalizer(model.token_set)) #, inference_batch_size=8, metrics_batch_size=8)
 print(evaluation)
 
-phrases = [p['transcription'] for p in phrases]
-transcriptions = [t['transcription'] for t in transcriptions]
+transcriptions = [back_to_cyrillic(t['transcription']) for t in transcriptions]
+phrases = [back_to_cyrillic(ph) for ph in phrases]
+
 ph_tr = list(zip(phrases, transcriptions))
 random.shuffle(ph_tr)
 # cyrillic_transcriptions = [''.join([get_vowel(vowel) for vowel in tr['transcription']]) for tr in transcriptions]
