@@ -20,7 +20,7 @@ training:
   web_model: 'facebook/wav2vec2-large-xlsr-53'  # a large model trained on 53 languages from the common_voice dataset
   pretrained_model_folder: 'model'
   output_model_folder: 'model'
-  subdir: 'stressed'
+  subdir: 'real_soft_lr'
   use_model_from_web: no
   batch_size: 1
   accumulation_steps: 1
