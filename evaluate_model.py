@@ -35,17 +35,17 @@ model = SpeechRecognitionModel(model_path)
 examples_file = RNC_PATH / config['data']['eval']  # Slash is a syntax of the pathlib library
 mult = rnc.MultimodalCorpus(file=examples_file)
 examples = mult.data
+if transcribe >= 0 and evaluate >= 0:
+    examples = examples[:max(transcribe,evaluate)]
 audio_paths = [str(MEDIA_PATH / get_basename(example.filepath)) for example in examples]
 phrases = [get_phrase_no_stress(example.txt) for example in examples]
 train_data = [{"path": str(audio_path), "transcription": gt} for audio_path, gt in zip(audio_paths, phrases)]
 
 
-preds = Path(config['results']['dir']) / 'transcriptions_real_stressed_soft.json'
-gt = Path(config['results']['dir']) / 'data_real_stressed_soft.json'
+preds = Path(config['results']['dir']) / 'transcriptions_real_not_stressed.json'
+gt = Path(config['results']['dir']) / 'data_real_not_stressed.json'
 
 if not preds.is_file():
-    if transcribe >= 0 and evaluate >= 0:
-        examples = examples[:max(transcribe,evaluate)]
     transcriptions = model.transcribe(audio_paths, batch_size=8)
     transcriptions = [{'transcription': t['transcription']} for t in transcriptions]
 
@@ -57,10 +57,10 @@ if not preds.is_file():
 with open(preds, 'r') as f:
     transcriptions = json.load(f)
 
-# with open(gt, 'r') as f:
-#     train_data = json.load(f)
+with open(gt, 'r') as f:
+    train_data = json.load(f)
 
-transcriptions = [{'transcription': get_phrase_no_stress(soft_to_original(t['transcription']))} for t in transcriptions]
+# transcriptions = [{'transcription': get_phrase_no_stress(t['transcription'])} for t in transcriptions]
 
 print(model.token_set)
 text_normalizer = DefaultTextNormalizer(model.token_set)
